@@ -1,0 +1,85 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isUser(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isGroupGyeju(groupId) {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/groups/$(groupId)).data.gyejuId == request.auth.uid;
+    }
+
+    function isApprovedMember(groupId) {
+      return isSignedIn() && exists(
+        /databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid)
+      );
+    }
+
+    function isGroupParticipant(groupId) {
+      return isGroupGyeju(groupId) || isApprovedMember(groupId);
+    }
+
+    // ── Users ────────────────────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isUser(userId);
+      allow update: if isUser(userId);
+      allow delete: if false;
+    }
+
+    // ── Groups ───────────────────────────────────────────────────────────────
+    match /groups/{groupId} {
+      allow read: if isSignedIn() && (
+        resource.data.isPublic == true ||
+        resource.data.gyejuId == request.auth.uid ||
+        isApprovedMember(groupId)
+      );
+      allow create: if isSignedIn();
+      allow update: if isGroupGyeju(groupId);
+      allow delete: if isGroupGyeju(groupId);
+
+      // Members
+      match /members/{memberId} {
+        allow read: if isGroupParticipant(groupId);
+        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+        allow update: if isGroupGyeju(groupId) ||
+          (resource.data.userId == request.auth.uid &&
+           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['requestedTurn']));
+        allow delete: if isGroupGyeju(groupId);
+      }
+
+      // Proofs (payment screenshots)
+      match /proofs/{proofId} {
+        allow read: if isGroupParticipant(groupId);
+        allow create: if isSignedIn() &&
+          request.resource.data.userId == request.auth.uid &&
+          request.resource.data.status == 'pending';
+        allow update: if isGroupGyeju(groupId);
+        allow delete: if false;
+      }
+
+      // Rounds
+      match /rounds/{roundId} {
+        allow read: if isGroupParticipant(groupId);
+        allow create, update: if isGroupGyeju(groupId);
+        allow delete: if false;
+      }
+
+      // Spending
+      match /spending/{spendingId} {
+        allow read: if isGroupParticipant(groupId);
+        allow create: if isApprovedMember(groupId);
+        allow update: if isGroupGyeju(groupId) ||
+          (isApprovedMember(groupId) &&
+           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes', 'status', 'resolvedAt']));
+        allow delete: if false;
+      }
+    }
+  }
+}
