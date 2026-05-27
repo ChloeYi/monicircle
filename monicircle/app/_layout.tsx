@@ -49,6 +49,7 @@ function RootNavigator() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="intro" options={{ animation: 'none' }} />
       <Stack.Protected guard={isAuthed}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="group" options={{ headerShown: false }} />
