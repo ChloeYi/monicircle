@@ -209,7 +209,7 @@ export default function OnboardingScreen() {
   function next() {
     if (current < SLIDES.length - 1) {
       listRef.current?.scrollToIndex({ index: current + 1, animated: true })
-      setCurrent(current + 1)
+      // setCurrent updated by onMomentumScrollEnd
     } else {
       finish()
     }
@@ -236,10 +236,13 @@ export default function OnboardingScreen() {
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        scrollEnabled={false}
         keyExtractor={(item) => item.key}
         renderItem={({ item, index }) => <Slide item={item} index={index} />}
         getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}
+        onMomentumScrollEnd={(e) => {
+          const index = Math.round(e.nativeEvent.contentOffset.x / width)
+          setCurrent(index)
+        }}
       />
 
       {/* Dots */}
