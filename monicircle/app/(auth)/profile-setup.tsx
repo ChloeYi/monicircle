@@ -11,6 +11,7 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
+  Image,
 } from 'react-native'
 import { useAuth } from '@/context/auth'
 import { createOrUpdateUserProfile } from '@/firebase/auth'
@@ -18,8 +19,8 @@ import { colors } from '../../constants/colors'
 
 const strings = {
   en: {
-    addPhoto: 'Add profile photo',
-    optional: 'Optional',
+    title: 'Complete your profile',
+    sub: 'This info is shared with your circle members',
     fullName: 'Full name',
     namePlaceholder: 'Enter your real name',
     phone: 'Phone number',
@@ -30,8 +31,8 @@ const strings = {
     complete: 'Complete setup',
   },
   ko: {
-    addPhoto: '프로필 사진 추가',
-    optional: '선택사항',
+    title: '프로필 설정',
+    sub: '계 모임 멤버들과 공유되는 정보입니다',
     fullName: '이름',
     namePlaceholder: '실명을 입력하세요',
     phone: '전화번호',
@@ -53,6 +54,11 @@ export default function ProfileSetupScreen() {
   const s = strings[lang]
 
   const user = state.status === 'needs-profile' ? state.user : null
+  const googlePhoto = user?.photoURL
+
+  const initials = name.trim()
+    ? name.trim().split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : (user?.email?.[0] ?? '?').toUpperCase()
 
   const handleComplete = async () => {
     if (!user) return
@@ -79,18 +85,19 @@ export default function ProfileSetupScreen() {
         </TouchableOpacity>
       </View>
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.inner} showsVerticalScrollIndicator={false}>
 
           <View style={styles.header}>
-            <View style={styles.avatarPlaceholder}>
-              <Text style={styles.avatarIcon}>+</Text>
-            </View>
-            <Text style={styles.avatarLabel}>{s.addPhoto}</Text>
-            <Text style={styles.avatarSub}>{s.optional}</Text>
+            {googlePhoto ? (
+              <Image source={{ uri: googlePhoto }} style={styles.avatarImage} />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <Text style={styles.avatarInitials}>{initials}</Text>
+              </View>
+            )}
+            <Text style={styles.headerTitle}>{s.title}</Text>
+            <Text style={styles.headerSub}>{s.sub}</Text>
           </View>
 
           <View style={styles.form}>
@@ -155,130 +162,39 @@ export default function ProfileSetupScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 4,
-  },
-  langToggle: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  langText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: colors.primary,
-  },
-  inner: {
-    padding: 24,
-    paddingTop: 32,
-    gap: 24,
-  },
-  header: {
-    alignItems: 'center',
-    gap: 8,
-  },
+  container: { flex: 1, backgroundColor: colors.background },
+  topBar: { flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 4 },
+  langToggle: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: colors.primary },
+  langText: { fontSize: 12, fontWeight: '500', color: colors.primary },
+  inner: { padding: 24, paddingTop: 32, gap: 24 },
+  header: { alignItems: 'center', gap: 10 },
+  avatarImage: { width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: colors.primaryLighter },
   avatarPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.primaryBg,
-    borderWidth: 2,
-    borderColor: colors.primaryLighter,
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 80, height: 80, borderRadius: 40,
+    backgroundColor: colors.primaryBg, borderWidth: 2, borderColor: colors.primaryLighter,
+    alignItems: 'center', justifyContent: 'center',
   },
-  avatarIcon: {
-    fontSize: 28,
-    color: colors.primaryLight,
-    fontWeight: '300',
-  },
-  avatarLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: colors.primary,
-  },
-  avatarSub: {
-    fontSize: 11,
-    color: colors.textLight,
-  },
-  form: {
-    gap: 20,
-  },
-  fieldWrap: {
-    gap: 6,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: colors.text,
-  },
+  avatarInitials: { fontSize: 26, fontWeight: '600', color: colors.primary },
+  headerTitle: { fontSize: 20, fontWeight: '600', color: colors.text },
+  headerSub: { fontSize: 13, color: colors.textSecondary, textAlign: 'center' },
+  form: { gap: 20 },
+  fieldWrap: { gap: 6 },
+  label: { fontSize: 13, fontWeight: '500', color: colors.text },
   input: {
-    backgroundColor: colors.surface,
-    borderWidth: 0.5,
-    borderColor: colors.border,
-    borderRadius: 10,
-    padding: 13,
-    fontSize: 14,
-    color: colors.text,
+    backgroundColor: colors.surface, borderWidth: 0.5, borderColor: colors.border,
+    borderRadius: 10, padding: 13, fontSize: 14, color: colors.text,
   },
-  fieldHint: {
-    fontSize: 11,
-    color: colors.textLight,
-    marginTop: 2,
-  },
-  paymentSection: {
-    gap: 8,
-  },
-  methodGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 4,
-  },
+  fieldHint: { fontSize: 11, color: colors.textLight, marginTop: 2 },
+  paymentSection: { gap: 8 },
+  methodGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },
   methodPill: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 0.5,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
+    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+    borderWidth: 0.5, borderColor: colors.border, backgroundColor: colors.surface,
   },
-  methodText: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  methodPillSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  methodTextSelected: {
-    color: '#fff',
-    fontWeight: '500',
-  },
-  completeBtn: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    padding: 15,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  completeBtnDisabled: {
-    backgroundColor: colors.grayLight,
-  },
-  completeBtnText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#fff',
-  },
+  methodText: { fontSize: 12, color: colors.textSecondary },
+  methodPillSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
+  methodTextSelected: { color: '#fff', fontWeight: '500' },
+  completeBtn: { backgroundColor: colors.primary, borderRadius: 12, padding: 15, alignItems: 'center', marginTop: 8 },
+  completeBtnDisabled: { backgroundColor: colors.grayLight },
+  completeBtnText: { fontSize: 15, fontWeight: '500', color: '#fff' },
 })
