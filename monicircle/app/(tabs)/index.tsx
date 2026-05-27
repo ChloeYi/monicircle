@@ -124,6 +124,7 @@ export default function HomeScreen() {
   const refPublicCard = useRef<View>(null)
 
   useEffect(() => {
+    if (loading) return
     const timer = setTimeout(() => {
       startTour([
         {
@@ -153,7 +154,7 @@ export default function HomeScreen() {
       ])
     }, 600)
     return () => clearTimeout(timer)
-  }, [])
+  }, [loading])
 
   return (
     <SafeAreaView style={styles.container}>
@@ -172,7 +173,7 @@ export default function HomeScreen() {
             <View style={styles.section}>
               <Text style={styles.sectionLabel}>MY GROUPS</Text>
               {myGroups.length === 0 ? (
-                <View style={styles.emptyCard}>
+                <View ref={refFirstCard} style={styles.emptyCard}>
                   <Text style={styles.emptyText}>No circles yet — create one below!</Text>
                 </View>
               ) : myGroups.map((g, i) => (

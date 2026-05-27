@@ -17,15 +17,21 @@ export default function TourOverlay() {
 
   const measureStep = useCallback(() => {
     const step = steps[currentStep]
-    if (!step?.ref?.current) return
-    step.ref.current.measureInWindow((x, y, width, height) => {
-      setRect({ x: x - PAD, y: y - PAD, width: width + PAD * 2, height: height + PAD * 2 })
+    if (!step?.ref?.current) {
+      // ref not mounted — skip this step
+      nextStep()
+      return
+    }
+    step.ref.current.measureInWindow((x, y, w, h) => {
+      if (w === 0 && h === 0) { nextStep(); return } // element not visible
+      setRect({ x: x - PAD, y: y - PAD, width: w + PAD * 2, height: h + PAD * 2 })
     })
-  }, [currentStep, steps])
+  }, [currentStep, steps, nextStep])
 
   useEffect(() => {
     if (!isActive) { setRect(null); return }
-    const timer = setTimeout(measureStep, 80)
+    setRect(null)
+    const timer = setTimeout(measureStep, 120)
     return () => clearTimeout(timer)
   }, [isActive, currentStep, measureStep])
 

@@ -20,7 +20,7 @@ type TourContextValue = {
 
 const TourContext = createContext<TourContextValue | null>(null)
 
-const STORAGE_KEY = 'tour_completed_v1'
+const STORAGE_KEY = 'tour_completed_v2'
 
 export function TourProvider({ children }: PropsWithChildren) {
   const [isActive, setIsActive] = useState(false)
