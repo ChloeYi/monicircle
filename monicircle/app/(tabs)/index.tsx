@@ -106,13 +106,15 @@ export default function HomeScreen() {
   useEffect(() => {
     if (!user) { setLoading(false); return }
     setLoading(true)
-    Promise.all([
+    Promise.allSettled([
       getUserGroups(user.uid),
       getPublicGroups(),
-    ]).then(([mine, pub]) => {
-      setMyGroups((mine as any[]).map(toGroupCardShape))
-      const myIds = new Set((mine as any[]).map((g: any) => g.id))
-      setPublicGroups((pub as any[]).filter((g: any) => !myIds.has(g.id)).map(toGroupCardShape))
+    ]).then(([mineResult, pubResult]) => {
+      const mine = mineResult.status === 'fulfilled' ? mineResult.value as any[] : []
+      const pub  = pubResult.status  === 'fulfilled' ? pubResult.value  as any[] : []
+      setMyGroups(mine.map(toGroupCardShape))
+      const myIds = new Set(mine.map((g: any) => g.id))
+      setPublicGroups(pub.filter((g: any) => !myIds.has(g.id)).map(toGroupCardShape))
     }).finally(() => setLoading(false))
   }, [user?.uid])
 

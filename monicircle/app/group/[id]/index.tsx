@@ -111,27 +111,29 @@ export default function GroupDetailScreen() {
 
   useEffect(() => {
     if (!id || !group) return
-    getActiveRound(id).then(setActiveRound)
+    getActiveRound(id).then(setActiveRound).catch(() => {})
     getGroupMembers(id).then(async (rawMembers) => {
       const withProfiles = await Promise.all(
         rawMembers.map(async (m: any) => {
-          const profile = await getUserProfile(m.userId)
-          return { ...m, userName: (profile as any)?.name ?? m.userId, }
+          const profile = await getUserProfile(m.userId).catch(() => null)
+          return { ...m, userName: (profile as any)?.name ?? m.userId }
         })
       )
       setMembers(withProfiles.filter((m: any) => m.status === 'approved'))
-    })
+    }).catch(() => {})
   }, [id, group?.status])
 
   useEffect(() => {
     if (!id) return
-    const unsub = subscribeProofs(id, setProofs)
-    return unsub
+    try {
+      const unsub = subscribeProofs(id, setProofs)
+      return unsub
+    } catch { return }
   }, [id])
 
   useEffect(() => {
     if (!user || !id || !activeRound || isOrganizer) return
-    getMyProofForRound(id, activeRound.roundNumber, user.uid).then(setMyProof)
+    getMyProofForRound(id, activeRound.roundNumber, user.uid).then(setMyProof).catch(() => {})
   }, [user, id, activeRound, isOrganizer])
 
   const totalRounds = members.length
