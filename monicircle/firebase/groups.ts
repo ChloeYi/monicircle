@@ -16,7 +16,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './config';
 
-export type GroupCategory = 'friends' | 'family' | 'church' | 'work' | 'study' | 'other';
+export type GroupCategory = 'friends' | 'family' | 'church' | 'work' | 'study' | 'neighbor' | 'other';
 export type GroupStatus = 'forming' | 'active' | 'complete';
 export type GroupCycle = 'weekly' | 'monthly';
 

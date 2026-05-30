@@ -21,6 +21,7 @@ import { colors } from '../../constants/colors'
 const CATEGORIES = [
   { id: 'friends', label: 'Friends', icon: 'account-group-outline' },
   { id: 'family', label: 'Family', icon: 'home-heart-outline' },
+  { id: 'neighbor', label: 'Neighbor', icon: 'home-city-outline' },
   { id: 'church', label: 'Church', icon: 'church' },
   { id: 'work', label: 'Work', icon: 'briefcase-outline' },
   { id: 'study', label: 'Study', icon: 'book-outline' },

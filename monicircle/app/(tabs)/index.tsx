@@ -22,6 +22,7 @@ const categoryIcon: Record<string, string> = {
   church: 'church',
   work: 'briefcase-outline',
   study: 'book-outline',
+  neighbor: 'home-city-outline',
   other: 'circle-outline',
 }
 
@@ -31,6 +32,7 @@ const categoryColor: Record<string, string> = {
   church: '#EDE7F6',
   work: '#FFF3E0',
   study: '#FCE4EC',
+  neighbor: '#E8F5E9',
   other: colors.grayBg,
 }
 
@@ -172,14 +174,34 @@ export default function HomeScreen() {
           <>
             <View style={styles.section}>
               <Text style={styles.sectionLabel}>MY GROUPS</Text>
-              {myGroups.length === 0 ? (
+              {myGroups.filter(g => g.category !== 'neighbor').length === 0 ? (
                 <View ref={refFirstCard} style={styles.emptyCard}>
                   <Text style={styles.emptyText}>No circles yet — create one below!</Text>
                 </View>
-              ) : myGroups.map((g, i) => (
+              ) : myGroups.filter(g => g.category !== 'neighbor').map((g, i) => (
                 <View key={g.id} ref={i === 0 ? refFirstCard : undefined}>
                   <GroupCard group={g} onPress={() => router.push(`/group/${g.id}`)} />
                 </View>
+              ))}
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>NEIGHBOR GROUPS</Text>
+              {myGroups.filter(g => g.category === 'neighbor').length === 0 ? (
+                <TouchableOpacity
+                  style={styles.neighborEmpty}
+                  activeOpacity={0.8}
+                  onPress={() => router.push('/group/create')}
+                >
+                  <MaterialCommunityIcons name="home-city-outline" size={22} color={colors.primary} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.neighborEmptyTitle}>이웃 계모임 시작하기</Text>
+                    <Text style={styles.neighborEmptyBody}>동네 이웃들과 함께하는 계모임을 만들어보세요.</Text>
+                  </View>
+                  <MaterialCommunityIcons name="chevron-right" size={18} color={colors.textSecondary} />
+                </TouchableOpacity>
+              ) : myGroups.filter(g => g.category === 'neighbor').map((g) => (
+                <GroupCard key={g.id} group={g} onPress={() => router.push(`/group/${g.id}`)} />
               ))}
             </View>
 
@@ -385,5 +407,25 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 13,
     color: colors.textSecondary,
+  },
+  neighborEmpty: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#E8F5E9',
+    borderWidth: 0.5,
+    borderColor: '#C8E6C9',
+    borderRadius: 12,
+    padding: 14,
+  },
+  neighborEmptyTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.text,
+  },
+  neighborEmptyBody: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 2,
   },
 })
